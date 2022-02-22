@@ -1,6 +1,4 @@
-from models.models import TNRD, TotalDeepVariation
 import tensorflow as tf
-
 def getGPU():
     """
     Grabs GPU. Sometimes Tensorflow attempts to use CPU when this is not called on my machine.
@@ -19,15 +17,9 @@ def getGPU():
             # Memory growth must be set before GPUs have been initialized
             print(e)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    getGPU()
-    TotalDeepVariation({}, verbose=False).summary()
-    #TotalDeepVariation({}, verbose=False).summary()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+def get_num_channels(config):
+    if config['grayscale']:
+        num_channels = 1
+    else:
+        num_channels = 3
+    return num_channels

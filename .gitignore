@@ -1,0 +1,6 @@
+# intellij configs
+.idea/
+
+# data
+data/
+models/saved_models/
