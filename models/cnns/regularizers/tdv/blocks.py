@@ -1,4 +1,4 @@
-from models.vnets.tdv.conv import Conv2d, ConvScale2d, ConvScaleTranspose2d
+from models.cnns.regularizers.tdv.conv import Conv2d, ConvScale2d, ConvScaleTranspose2d
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
 
@@ -41,6 +41,9 @@ class MicroBlock(tf.keras.Model):
         invariant: (bool) - If True, conv kernels are invariant. Currently, not implemented
         kwargs: kwargs of tf.keras.Model
         """
+        self.num_features = num_features
+        self.bound_norm = bound_norm
+        self.invariant = invariant
         super(MicroBlock, self).__init__(**kwargs)
         self.conv1 = Conv2d(num_features, num_features, kernel_size=3, invariant=invariant,
                               bound_norm=bound_norm, bias=False, name=f'{self.name}_tdv_conv2d_1')
@@ -97,8 +100,12 @@ class MacroBlock(tf.keras.Model):
         invariant: bool
             If True, apply invariant processing to convolution kernels. Currently not implemented
         """
-        super(MacroBlock, self).__init__(**kwargs)
+        super(MacroBlock, self).__init__()
+        self.num_features = num_features
         self.num_scales = num_scales
+        self.multiplier = multiplier
+        self.bound_norm = bound_norm
+        self.invariant = invariant
 
         # micro blocks
         self.mb = []
@@ -118,13 +125,14 @@ class MacroBlock(tf.keras.Model):
         self.conv_up = []
         for i in range(1, num_scales):
             self.conv_down.append(
-                ConvScale2d(num_features * multiplier ** (i - 1), num_features * multiplier ** i, scale=i, kernel_size=3,
+                ConvScale2d(num_features * multiplier ** (i - 1), num_features * multiplier ** i, kernel_size=3,
                             bias=False, invariant=invariant, bound_norm=bound_norm, name=f'{self.name}_conv_down_{i}')
             )
             self.conv_up.append(
-                ConvScaleTranspose2d(num_features * multiplier ** (i - 1), num_features * multiplier ** i, scale=i,
+                ConvScaleTranspose2d(num_features * multiplier ** (i - 1), num_features * multiplier ** i,
                                      kernel_size=3, bias=False, invariant=invariant, bound_norm=bound_norm, name=f'{self.name}_conv_up_{i}')
             )
+        super(MacroBlock, self).__init__(**kwargs)
 
     def get_config(self):
         """Return config for model"""
@@ -133,7 +141,7 @@ class MacroBlock(tf.keras.Model):
                   'multiplier': self.multiplier,
                   'bound_norm': self.bound_norm,
                   'invariant': self.invariant}
-        base_config = super(MicroBlock, self).get_config()
+        base_config = super(MacroBlock, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     def forward(self, x):
@@ -198,7 +206,7 @@ class MacroBlock(tf.keras.Model):
 if __name__ == "__main__":
     """For Testing"""
     from util import getGPU
-    from models.vnets.tdv.test import GradientTest
+    from models.cnns.regularizers.gradient_test import GradientTest
     import numpy as np
     getGPU()
     test = GradientTest()

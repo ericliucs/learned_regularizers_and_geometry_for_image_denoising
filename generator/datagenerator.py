@@ -3,12 +3,13 @@ from tensorflow import keras
 import os
 import glob
 from PIL import Image
-from typing import Dict, List
 import random
+from typing import Dict, Union, List
+from models.cnns.regularizers.tv.tv import TVRegularizer
 
 
 class DataGenerator(keras.utils.Sequence):
-    '''Generates training and test data for Keras'''
+    """Generates training and test data for Keras"""
 
     def __init__(self, config: Dict,
                  load_training_data: bool = True):
@@ -20,30 +21,33 @@ class DataGenerator(keras.utils.Sequence):
         load_training_data: (bool) - If True, training data will be loaded in preparation for Training.
         """
         self.config = config
-        self.training_image_data = []
-        self.testing_image_data = []
+
         # Get training data if specified
-        if load_training_data:
-            self.training_image_data = self._load_data(os.path.join('data', 'train', config['train']),
-                                                       num=self.config['R'],
+        if load_training_data and 'train' in config:
+            self.training_image_data = self._load_data(self.config['train'],
+                                                       num=self.config['num_training_images'],
                                                        grayscale=self.config['grayscale'])
             self.training_image_data = self._convert_data_based_on_task(self.training_image_data,
                                                                         task=self.config['train_task'])
         # Get test data
-        self.testing_image_data = self._load_data(os.path.join('data', 'test', config['test']),
-                                                  grayscale=self.config['grayscale'])
-        self.testing_image_data = self._convert_data_based_on_task(self.testing_image_data,
-                                                                   task=self.config['test_task'])
+        if 'test' in config:
+            self.testing_image_data = self._load_data(config['test'],
+                                                      grayscale=self.config['grayscale'])
+            self.testing_image_data = self._convert_data_based_on_task(self.testing_image_data,
+                                                                       task=self.config['test_task'])
+
+        if 'denoise_curvature' in self.config['train_task'] or 'approx_curvature' in self.config['train_task']:
+            self.curvature = TVRegularizer({}).grad
 
     @staticmethod
-    def _load_data(files_location: str,
-                    num: int = None,
-                    grayscale: bool = True) -> List[np.ndarray]:
+    def _load_data(files_location: Union[str, List],
+                   num: int = None,
+                   grayscale: bool = True) -> List[np.ndarray]:
         """Loads at most num data from files_location, converts to grayscale if specified, standardizes to [0,1]
 
         Parameters
         ----------
-        files_location: (str) - Directory where data is stored
+        files_location: (Union[str, List]) - Directory  or list of directories where data is stored
         num: (int) - Max number of images to load in
         grayscale: (bool) - If True, converts images to grayscale.
 
@@ -51,8 +55,14 @@ class DataGenerator(keras.utils.Sequence):
         -------
         List[np.ndarray]: List of numpy images
         """
-        file_list = glob.glob(files_location + '/*.png')
-        file_list += glob.glob(files_location + '/*.jpg')
+        if isinstance(files_location, str):
+            files_location = [files_location]
+        file_list = []
+        for loc in files_location:
+            location = os.path.join('data', loc)
+            file_list += glob.glob(location + '/*.png')
+            file_list += glob.glob(location + '/*.jpg')
+        file_list = sorted(file_list)
         file_list = file_list[:num]
         img_list = []
         for file in file_list:
@@ -66,27 +76,8 @@ class DataGenerator(keras.utils.Sequence):
         return img_list
 
     @staticmethod
-    def _convert_data_based_on_task(data: List[np.ndarray], task: str) -> List[np.ndarray]:
-        """Converts image data based on specified task
-
-        Parameters
-        ----------
-        data: (List) - List of image data
-        task: (task) - Model task. For example, denoising or super resolution.
-
-        Returns
-        -------
-        List: Converted image data list
-
-        """
-        if task == 'denoising':
-            return data
-        else:
-            raise NotImplementedError
-
-    def _data_aug(self, img: np.ndarray, mode: int) -> np.ndarray:
-        """Augments image by flipping or rotating. Code from
-        https://github.com/cszn/DnCNN/blob/master/TrainingCodes/dncnn_keras/data_generator.py
+    def _data_aug(img: np.ndarray, mode: int) -> np.ndarray:
+        """Augments image by flipping or rotating.
 
         Parameters
         ----------
@@ -130,23 +121,69 @@ class DataGenerator(keras.utils.Sequence):
         return self._data_aug(patch, mode=np.random.randint(0, 8))
 
     def __len__(self):
-        '''Returns number of batches per epoch'''
-        # Will do number of distinct patches across all images
-        num_pixels = 0
-        for img in self.training_image_data:
-            num_pixels += img.shape[0]*img.shape[1]
-        batches_per_epcoh = num_pixels // (self.config['patch_size']**2)
-        return 1000
+        """Returns number of batches per epoch"""
+        if 'len_test_1' in self.config:
+            return 1
+        else:
+            return 10000
+
+    def _convert_data_based_on_task(self, data: List[np.ndarray], task: str) -> List[np.ndarray]:
+        """Converts image data based on specified task
+
+        Parameters
+        ----------
+        data: (List) - List of image data
+        task: (task) - Model task. For example, denoising or super resolution.
+
+        Returns
+        -------
+        List: Converted image data list
+
+        """
+        if task == 'denoising':
+            return data
+        elif 'denoise_curvature' in task:
+            return data
+        elif 'approx_curvature' in task:
+            return data
+        elif 'oracle_recon' in task:
+            return data
+        else:
+            raise NotImplementedError
+
+    def _generate_x_based_on_task(self, data, task):
+        """Generates X data based on specified task
+        """
+        if task == 'denoising' or task == 'denoise_curvature' or task == 'oracle_recon':
+            return data + np.random.normal(0, self.config['sigma']/255.0, data.shape)
+        elif 'approx_curvature' in task:
+            return data
+        else:
+            raise NotImplementedError
+
+    def _convert_batch_based_on_task(self, x, y, task):
+        """Converts batch x and y based on specified task"""
+        if task == 'denoising':
+            return x, y
+        elif 'denoise_curvature' in task:
+            return self.curvature(x), self.curvature(y)
+        elif 'approx_curvature' in task:
+            return x, self.curvature(y)
+        elif 'oracle_recon' in task:
+            return [x,y], y
+        else:
+            raise NotImplementedError
 
     def __getitem__(self, index):
-        '''Generate one batch of data'''
-        y = np.asarray([self._extract_patch() for i in range(self.config['batch_size'])])
-        X = y + np.random.normal(0, self.config['sigma']/255.0, y.shape)
-        return X, y
+        """Generate one batch of data"""
+        y = np.asarray([self._extract_patch() for _ in range(self.config['batch_size'])])
+        X = self._generate_x_based_on_task(y, self.config['train_task'])
+        return self._convert_batch_based_on_task(X, y, self.config['train_task'])
 
     def generate_test_set(self):
         """Generator for test set
         """
         for y in self.testing_image_data:
-            X = y + np.random.normal(0, self.config['sigma'] / 255.0, y.shape)
-            yield X[np.newaxis, :, :, :], y[np.newaxis, :, :, :]
+            X = self._generate_x_based_on_task(y, self.config['test_task'])
+            yield self._convert_batch_based_on_task(X[np.newaxis, :, :, :],
+                                                    y[np.newaxis, :, :, :], self.config['test_task'])

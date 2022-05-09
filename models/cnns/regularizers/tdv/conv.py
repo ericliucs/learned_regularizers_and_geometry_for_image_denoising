@@ -80,12 +80,13 @@ class ForwardConv2d(Layer):
         pad: (bool) - Pads image with symmetric padding if True
         kwargs: kwargs of Keras layer
         """
-        super(ForwardConv2d, self).__init__(**kwargs)
+        super(ForwardConv2d, self).__init__()
         self.in_channels = in_channels
         self.stride = stride
         self.dilation = dilation
         self.kernel_size = kernel_size
         self.pad = pad
+        super(ForwardConv2d, self).__init__(**kwargs)
 
     def call(self, inputs, training=None, mask=None):
         """Pads image and applies convolution to input"""
@@ -134,11 +135,11 @@ class BackwardConv2d(ForwardConv2d):
             output_shape = tf.shape(output_s) + [0,weight_shape[0]-1,weight_shape[0]-1,0]
 
         x = tf.nn.conv2d_transpose(input=x,
-                                   filters=weight,
-                                   output_shape=output_shape,
-                                   strides=self.stride,
-                                   dilations=self.dilation,
-                                   padding='VALID')
+                                  filters=weight,
+                                  output_shape=output_shape,
+                                  strides=self.stride,
+                                  dilations=self.dilation,
+                                  padding='VALID')
 
         pad = weight.shape[1]//2
         if self.pad and pad > 0:
@@ -176,7 +177,7 @@ class Conv2d(tf.keras.Model):
        pad: (bool) - Pads image with symmetric padding if True
        kwargs: kwargs of tf.Keras.Model
         """
-        super(Conv2d, self).__init__(**kwargs)
+        super(Conv2d, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
@@ -199,6 +200,7 @@ class Conv2d(tf.keras.Model):
                                         kernel_size=kernel_size,
                                         pad=pad)
         self._build()
+        super(Conv2d, self).__init__(**kwargs)
 
     def _build(self):
         """Builds the convolution kernel weights"""
@@ -315,7 +317,6 @@ class ConvScale2d(Conv2d):
         return weight
 
 
-
 class ConvScaleTranspose2d(ConvScale2d):
     """Implements ConvScaleTranspose2d operation from https://github.com/VLOGroup/tdv/blob/master/ddr/conv.py"""
 
@@ -333,18 +334,18 @@ class ConvScaleTranspose2d(ConvScale2d):
 if __name__ == "__main__":
     """For Testing"""
     from util import getGPU
-    from models.vnets.tdv.test import GradientTest
+    from models.cnns.regularizers.gradient_test import GradientTest
     getGPU()
     test = GradientTest()
 
     x = np.random.rand(2, 64, 64, 1)
-    operator = ConvScale2d(1, 2, kernel_size=3, name='Conv2d', stride=2)
+    operator = Conv2d(1, 4, kernel_size=5, name='Conv2d', stride=2)
     test.test_gradient(x, operator)
 
     x = np.random.rand(2, 64, 64, 1)
-    operator = ConvScale2d(1, 2, kernel_size=3, name='ConvScale2d', stride=2)
+    operator = ConvScale2d(1, 4, kernel_size=5, name='ConvScale2d', stride=2)
     test.test_gradient(x, operator)
 
     x = np.random.rand(2, 64, 64, 2)
-    operator = ConvScaleTranspose2d(1, 2, kernel_size=3, name='ConvScale2d', stride=2)
+    operator = ConvScaleTranspose2d(2, 2, kernel_size=5, name='ConvScaleTranspose2d', stride=2)
     test.test_gradient(x, operator)

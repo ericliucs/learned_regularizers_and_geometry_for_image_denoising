@@ -4,3 +4,11 @@
 # data
 data/
 models/saved_models/
+models_to_server.sh
+models_from_server.sh
+reproduce
+
+add_path.sh
+check_tdv.sh
+my_update_from_server.sh
+my_push_to_server.sh
