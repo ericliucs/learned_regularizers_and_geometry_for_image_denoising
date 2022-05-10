@@ -117,5 +117,7 @@ def model_configs():
 if __name__ == '__main__':
     getGPU()
     for config in model_configs():
+        model = VNetModel(config, add_keys=False)
+        del model
         tf.keras.backend.clear_session()
-        VNetModel(config, add_keys=False)
+        tf.compat.v1.reset_default_graph()

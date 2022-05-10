@@ -240,6 +240,14 @@ class VNetModel(DenoisingModel):
         """Defines optimizer for training"""
         return Adam(lr=1e-3)
 
+    def _clear_all_model_data(self):
+        """
+        Clears all current model data from tensorflow graph
+        """
+        del self.model
+        tf.keras.backend.clear_session()
+        tf.compat.v1.reset_default_graph()
+
     def _train_layer_wise(self):
         """Layer wise training for model.
         Continually trains model and after self.epochs,
@@ -247,7 +255,7 @@ class VNetModel(DenoisingModel):
 
         if self.config['S'] > 1:
 
-            def clear_session_and_load_model_from_file(file: str):
+            def load_model_from_file(file: str):
                 """Clears the keras session and loads model from file if file exists. Otherwise, returns None.
 
                 Parameters
@@ -259,7 +267,6 @@ class VNetModel(DenoisingModel):
                 model: Keras model if file exists. None otherwise.
                 """
                 if os.path.exists(file):
-                    tf.keras.backend.clear_session()
                     model = self._build()
                     model = self._model(model)
                     model.compile(optimizer=self.optimizer(), loss=retrieve_loss_function(self.config))
@@ -271,7 +278,8 @@ class VNetModel(DenoisingModel):
                     return None
 
             # Attempt to load init if it exists
-            self.model = clear_session_and_load_model_from_file(os.path.join(self.data_dir, 'init'))
+            self._clear_all_model_data()
+            self.model = load_model_from_file(os.path.join(self.data_dir, 'init'))
 
             # Otherwise grab init from model with S-1 stages and train if necessary
             if self.model is None:
@@ -279,6 +287,7 @@ class VNetModel(DenoisingModel):
                 # Ensure previous model is trained
                 tf.keras.backend.clear_session()
                 self.config['S'] = self.config['S'] - 1
+                self._clear_all_model_data()
                 prev_model = type(self)(self.config, add_keys=False)
                 self.config['S'] = self.config['S'] + 1
 
@@ -294,7 +303,9 @@ class VNetModel(DenoisingModel):
 
                 # Save loaded model
                 self.model.save(os.path.join(self.data_dir, 'init'))
-                self.model = clear_session_and_load_model_from_file(os.path.join(self.data_dir, 'init'))
+                del prev_model
+                self._clear_all_model_data()
+                self.model = load_model_from_file(os.path.join(self.data_dir, 'init'))
 
         print(f'Training {self.config["S"]} Stage Model')
         self._standard_training(save_every=2, test_every=2)

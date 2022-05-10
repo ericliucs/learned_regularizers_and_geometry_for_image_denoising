@@ -206,7 +206,7 @@ class DenoisingModel(ABC):
         csv_logger = CSVLogger(loss_file, append=True, separator=',')
         lr_scheduler = LearningRateScheduler(self.scheduler())
         tester = PSNRTest(self, test_every=test_every)
-        data_generator = DataGenerator(self.config, load_training_data=True, model_type=type(self))
+        data_generator = DataGenerator(self.config, load_training_data=True)
         self.model.fit(data_generator,
                        epochs=self.config['epochs'], verbose=1,
                        callbacks=[lr_scheduler, checkpointer, csv_logger, tester],
