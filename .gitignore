@@ -2,13 +2,16 @@
 .idea/
 
 # data
-data/
-models/saved_models/
+data/BSDS68
+data/BSDS400
+
+# saved models
+denoising/models/saved_models/
+
+# extra code
 models_to_server.sh
 models_from_server.sh
-reproduce
-
-add_path.sh
-check_tdv.sh
-my_update_from_server.sh
 my_push_to_server.sh
+my_update_from_server.sh
+clear_training_files.py
+add_path.sh
