@@ -57,6 +57,8 @@ def save_testing_data(test_dir: str = os.path.join(os.getcwd(),'data', 'BSDS68')
     test_set_list_url = 'http://www.visinf.tu-darmstadt.de/media/visinf/vi_data/foe_test.txt'
     test_list = urllib.request.urlopen(test_set_list_url).read().decode('utf-8').split('\n')[:-1]
     src_dir = os.path.join(data_source_base_dir, 'val')
+    if not os.path.isdir(test_dir):
+        os.mkdir(test_dir)
     for i, file in enumerate(test_list):
         with Image.open(os.path.join(src_dir, file)) as im:
             img = im.load()
@@ -66,7 +68,7 @@ def save_testing_data(test_dir: str = os.path.join(os.getcwd(),'data', 'BSDS68')
 
 def cleanup():
     """
-    Cleans up tmp directory where data is initially stored
+    Cleans up directory where data is initially stored
     """
     bsds_url = 'http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/BSR/BSR_bsds500.tgz'
     tar_name = bsds_url.split('/')[-1]

@@ -15,3 +15,6 @@ my_push_to_server.sh
 my_update_from_server.sh
 clear_training_files.py
 add_path.sh
+
+# py directories
+**/__pycache__/

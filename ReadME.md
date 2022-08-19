@@ -15,7 +15,7 @@ to easily mix and match regularizers to experiment with variations of the GF-typ
   - [Getting Started](#getting-started)
     - [Installing Packages](#installing-packages)
     - [Setting PythonPath](#setting-pythonpath)
-    - [Generating Data](#generating-data)
+    - [Loading Data](#loading-data)
     - [Testing](#testing)
   - [Reproduction](#reproduction)
   - [Implementation and Training](#implementation-and-training)
@@ -38,20 +38,23 @@ To get started, first git clone the repository. Then, follow the next few steps.
 
 ### Installing Packages
 
-There are a variety of python packages that are required to run the main denoising code. See ``setup.sh`` and ``requirements.txt`` to
-view the packages that are required. If you are running Linux, installing the necessary packages should 
-be as easy as calling ``bash setup.sh`` in the terminal. I highly recommend that you create a new virtual 
+There are a variety of python packages that are required to run the main denoising code. See ``requirements.txt`` to
+view the packages that are required. I highly recommend that you create a new Conda virtual 
 environment prior to installing the packages. The code was last tested with Python version ``3.7.10``.
+
+The only package not able to be installed through pip is the [optox](https://github.com/VLOGroup/optox) package built by Kerstin Hammernik. 
+This package is used to implement custom operators in both TNRD and TDV. The file ``install_optox.sh`` provides an example as to how I 
+usually install it.
 
 ### Setting PythonPath
 
 Before running any other code, please make sure that your python path is appropriately set. To set the path,
 in the top-level directory folder, call ``export PYTHONPATH="${PYTHONPATH}:$PWD"``.
 
-### Generating Data
+### Loading Data
 
 Generating the BSDS train and test sets into the appropriate directories should be as simple as calling 
-``python3 data/generate_data.py``.
+``python3 data/load_data.py``.
 
 ### Testing
 
