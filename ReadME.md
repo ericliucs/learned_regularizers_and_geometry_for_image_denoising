@@ -2,11 +2,8 @@
 
 *Code by [Ryan Cecil](https://www.cecil-ryan.com/). Project advised by [Dr. Stacey Levine](https://www.duq.edu/academics/faculty/stacey-levine).*
 
-This repository contains the main code I have used while working in the area of
-image denoising. It is capable of not only training and testing a variety of variational based 
-image denoising models using the BSDS train and test sets, but also allows the user
-to easily mix and match regularizers to experiment with variations of the GF-type architecture we proposed in
-[this paper](https://www.bmvc2021-virtualconference.com/assets/papers/1117.pdf).
+This repository is a fork of Ryan Cecil's work on [this paper](https://www.bmvc2021-virtualconference.com/assets/papers/1117.pdf) for further testing
+and experimentation.
 
 ## Table of Contents
 - [Learned Regularizers and Geometry for Image Denoising](#learned-regularizers-and-geometry-for-image-denoising)
@@ -43,8 +40,12 @@ view the packages that are required. I highly recommend that you create a new Co
 environment prior to installing the packages. The code was last tested with Python version ``3.7.10``.
 
 The only package not able to be installed through pip is the [optox](https://github.com/VLOGroup/optox) package built by Kerstin Hammernik. 
-This package is used to implement custom operators in both TNRD and TDV. The file ``install_optox.sh`` provides an example as to how I 
-usually install it.
+This package is used to implement custom operators in both TNRD and TDV. The file ``install_optox.sh`` is
+a typical way of installing the optox package that should be modified for your machine. Also included is a
+``install_optox_new.sh`` file that I use in case of issues with cloning optox from GitHub.
+
+Note that optox depends on CUDA samples that are no longer included in the toolkit from version 11.6 and onwards.
+Ensure that you use CUDA Toolkit 11.5.2 at the latest.
 
 ### Setting PythonPath
 
