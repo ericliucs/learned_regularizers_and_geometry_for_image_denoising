@@ -87,7 +87,7 @@ Here is a quick overview of where the main implementation and training code are 
 
 ## Citations
 
-If you happen to use any of our newly proposed architectures or variations, 
+If you happen to use any of their newly proposed architectures or variations, 
 please cite the following conference paper:
 
 - [Learned Regularizers and Geometry for Image Denoising](https://www.bmvc2021-virtualconference.com/conference/papers/paper_1117.html) by Stacey Levine, Ryan Cecil, and Marcelo Bertalmio.
