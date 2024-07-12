@@ -39,17 +39,28 @@ There are a variety of python packages that are required to run the main denoisi
 view the packages that are required. I highly recommend that you create a new Conda virtual 
 environment prior to installing the packages. The code was last tested with Python version ``3.7.10``.
 
+**Important:** The packages are listed in requirements.txt, which is used to build an environment using the command
+``conda create --name <name> --file requirements.txt``. **However**, if you try to run this command, you will get
+a ``PackagesNotFoundError`` as conda cannot find certain packages that were installed through pip.
+
+Provided is the ``list_export_to_yaml.awk`` file which can be used to convert the requirements to a YAML file,
+which can be used to create an environment in a way that Conda can find all the packages. To create an environment
+from the YAML file, run ``conda env create --name <name> --file environment.yml``.
+
 The only package not able to be installed through pip is the [optox](https://github.com/VLOGroup/optox) package built by Kerstin Hammernik. 
 This package is used to implement custom operators in both TNRD and TDV. The file ``install_optox.sh`` is
 a typical way of installing the optox package that should be modified for your machine. Also included is a
 ``install_optox_new.sh`` file that I use in case of issues with cloning optox from GitHub.
 
-Note that optox depends on CUDA samples that are no longer included in the toolkit from version 11.6 and onwards.
-Ensure that you use CUDA Toolkit 11.5.2 at the latest.
+**Important:** Some files make use of the PyYAML package, which is not included in the requirements. Run 
+``conda install pyyaml`` in your conda environment to install it.
+
+**Important:** optox depends on CUDA samples that are no longer included in the toolkit from version 11.6 and onwards.
+Ensure that you use CUDA Toolkit 11.5.2 at the latest, as newer versions will not work.
 
 ### Setting PythonPath
 
-Before running any other code, please make sure that your python path is appropriately set. To set the path,
+Once all requirements are installed, before running any other code, please make sure that your python path is appropriately set. To set the path,
 in the top-level directory folder, call ``export PYTHONPATH="${PYTHONPATH}:$PWD"``.
 
 ### Loading Data
