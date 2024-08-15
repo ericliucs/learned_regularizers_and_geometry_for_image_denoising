@@ -25,7 +25,7 @@ environment is created, run ``conda install pyyaml`` in your environment to inst
 
 The last package that is needed, optox, depends on the CUDA Toolkit - more specifically, included CUDA
 samples. However, these are no longer included in toolkit versions later than 11.5.2, so ensure that you install
-11.5.2. at the latest.
+11.5.2. at the latest. The toolkit can be found at https://developer.nvidia.com/cuda-toolkit-archive.
 
 ### optox
 
