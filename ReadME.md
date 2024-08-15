@@ -55,9 +55,6 @@ a typical way of installing the optox package that should be modified for your m
 **Important:** Some files make use of the PyYAML package, which is not included in the requirements. Run 
 ``conda install pyyaml`` in your conda environment to install it.
 
-**Important:** optox depends on CUDA samples that are no longer included in the toolkit from version 11.6 and onwards.
-Ensure that you use CUDA Toolkit 11.5.2 at the latest, as newer versions will not work.
-
 ### Setting PythonPath
 
 Once all requirements are installed, before running any other code, please make sure that your python path is appropriately set. To set the path,
