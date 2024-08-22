@@ -47,3 +47,34 @@ At the linked web page, switch over to the “Linux” panel, and run the four g
 After running these commands, you’ll need to restart your shell, e.g., log out of the SSH gateway and log back in.
 When you restart your shell, you should see that your shell prompt now begins with `(base)`, which indicates that
 you are in the ‘base’ conda environment.
+
+## Environment Setup II: Installing (Most) Dependencies
+
+In the project files is the file `requirements.txt` which was exported from Ryan's Conda virtual environment (which is
+the output of the command `conda list -e`). We can assume the packages in this list were the same packages he was using
+in his own environment.
+
+The standard procedure to create an environment from this list would be to run `conda create --name <name> --file 
+requirements.txt`, and is also suggested within the file itself. **However, if you try to run this command, you will 
+get a PackagesNotFoundError.**
+
+![An image of the PackagesNotFoundError.](pip-errors.png)
+
+Notice that all the missing packages end in `pypi_0`. This indicates that they were installed using pip instead of 
+Conda. pip installs packages from the Python Package Index or PyPI repository. The `conda create` command cannot 
+look for packages in this repository.
+
+To fix this, we can instead create the Conda environment from a YAML file instead. If we had access to Ryan's 
+original environment, we could easily export it as a YAML file, but we don't have that. Instead, Nathan found 
+[this StackOverflow answer](https://stackoverflow.com/questions/70774618/conda-create-from-requirements-txt-not-finding-packages)
+which provides the `list_export_to_yaml.awk` file which has already been included in this fork of Ryan's repo. To 
+run the script, run `awk -f list_export_to_yaml.awk requirements.txt > environment.yaml` to generate our new YAML file.
+
+To create a Conda environment from our YAML file, the command is slightly different: 
+`conda env create --name <name> --file environment.yml`,  where `<name>` can be whatever you want the Conda 
+environment to be named.
+
+The step "installing pip dependencies" might take a while. This step properly installs the missing packages that weren't
+found previously.
+
+Once the environment has been created, you can tell Conda to use it with the command `conda activate <name>`.
