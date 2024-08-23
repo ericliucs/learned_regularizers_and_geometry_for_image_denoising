@@ -131,9 +131,9 @@ change `/common/inc` to `/Common`.
 
 ### Running the Installation Script
 
-Assuming you modified the `install_optox_new.sh` script to where the files are in your machine, you should be able 
-to run the script with the command `sh install_optox_new.sh`. Hopefully, the installation script works and all tests 
-pass!
+Assuming you modified the `install_optox_new.sh` script to where the files are in your machine and the CMakeLists.
+txt file in the optox directory has been updated, you should be able to run the script with the command 
+`sh install_optox_new.sh`. Hopefully, the installation script works and all tests pass!
 
 If the installation runs into an error at around 50%, the usual cause is that the path in `install_optox_new.sh` 
 starting with `export CUDA_SDK_ROOT_DIR=` is incorrect. Ensure that the path directs to where the CUDA samples are 
